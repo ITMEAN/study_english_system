@@ -1,0 +1,30 @@
+jwt:
+  expiration: 2592000
+  expiration-refresh: 5184000
+  secretKey: ZGFpaG9jY29uZ25naGllcHRoYW5ocGhvaG9jaGltaW5o
+eureka:
+  client:
+    service-url:
+        defaultZone: ${EUREKA_URI}
+  instance:
+    ip-address: ${HOST_IP}
+    prefer-ip-address: true
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  application:
+    name: test-service
+  data:
+    mongodb:
+      uri: mongodb+srv://minh:123456789a@mycluser.04jrsqv.mongodb.net/?retryWrites=true&w=majority&appName=myCluser
+      database: test-service
+amazon-properties:
+  region: ap-southeast-1
+  access-key:
+  secret-key:
+  bucket-name:
+server:
+  port: 8084
+

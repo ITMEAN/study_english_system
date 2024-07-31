@@ -1,0 +1,85 @@
+server:
+  port: 8080
+jwt:
+  expiration: 2592000
+  expiration-refresh: 5184000
+  secretKey: ZGFpaG9jY29uZ25naGllcHRoYW5ocGhvaG9jaGltaW5o
+api:
+  prefix: /api/v1
+eureka:
+  client:
+    serviceUrl:
+       defaultZone: ${EUREKA_URI}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+spring:
+  application:
+    name: gateway-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-headers: "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: identity-service
+          uri: lb://IDENTITY-SERVICE/
+          filters:
+            - AuthenticationFilter
+          predicates:
+            - Path= /api/v1/auth/**
+        - id: user-service
+          uri: lb://USER-SERVICE
+          filters:
+            - AuthenticationFilter
+          predicates:
+            - Path= /api/v1/users/**
+        - id: test-service
+          uri: lb://TEST-SERVICE
+          predicates:
+            - Path= /api/v1/tests/**
+#            - Path= /api/v1/results/**
+          filters:
+            - AuthenticationFilter
+        - id: exercise-service
+          uri: lb://EXERCISE-SERVICE
+          predicates:
+            - Path= /api/v1/exercise/**
+          filters:
+            - AuthenticationFilter
+
+#          - id: identity-service
+#            uri: lb://IDENTITY-SERVICE
+##            filters:
+##              - AuthenticationFilter
+#            predicates:
+#              - Path= /api/v1/auth/**
+

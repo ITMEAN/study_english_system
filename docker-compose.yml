@@ -1,0 +1,114 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "identify_service"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "12345678"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/user.sql:/docker-entrypoint-initdb.d/user.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - my-network
+
+  discovery-service:
+    image: nwth02/discovery-service
+    build:
+      context: .
+      dockerfile: ./discovery-service/Dockerfile
+    environment:
+      EUREKA_URI: "http://discovery-service:8761/eureka/"
+    ports:
+      - "8761:8761"
+    networks:
+      - my-network
+
+  identity-service:
+    image: nwth02/identity-service
+    build:
+      context: .
+      dockerfile: ./identity-service/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL:
+      SPRING_DATASOURCE_USERNAME:
+      SPRING_DATASOURCE_PASSWORD:
+      EUREKA_URI:
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+      FRONTEND_URL:
+      HOST_IP:
+    ports:
+      - "8081:8081"
+    networks:
+      - my-network
+    depends_on:
+      - discovery-service
+      - mysql
+
+  gateway-service:
+    image: nwth02/gateway-service
+    build:
+      context: .
+      dockerfile: ./gateway-service/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://user-service.c924qiwgcubj.ap-southeast-1.rds.amazonaws.com:3306/identify_service?allowPublicKeyRetrieval=true&useSSL=false"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "0986745585a"
+      EUREKA_URI: "http://discovery-service:8761/eureka/"
+    networks:
+      - my-network
+    depends_on:
+      - discovery-service
+    volumes:
+      - ./gateway-service/src/main/resources/application.yml:/app/src/main/resources/application.yml
+
+  test-service:
+    image: nwth02/test-service
+    build:
+      context: .
+      dockerfile: ./test-service/Dockerfile
+    ports:
+      - "8084:8084"
+    networks:
+      - my-network
+    environment:
+      EUREKA_URI: "http://18.141.193.54:8761/eureka/"
+      HOST_IP: "192.167.1.1"
+
+  exercise-service:
+    image: nwth02/exercise-service
+    build:
+      context: .
+      dockerfile: ./exercise-service/Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      EUREKA_URI: "http://18.141.193.54:8761/eureka/"
+      HOST_IP: "192.17.6.1"
+    networks:
+      - my-network
+    depends_on:
+      - discovery-service
+
+  frontend:
+    image: nwth02/frontend
+    build:
+      context: .
+      dockerfile: ./frontend/lsrc/Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - my-network
+networks:
+  my-network:
+    driver: bridge
+volumes:
+  mysql-data:

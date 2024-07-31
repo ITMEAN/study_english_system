@@ -1,0 +1,32 @@
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 12345678
+    url: jdbc:mysql://localhost:3306/identify_service?useSSL=false
+  security:
+    user:
+      name: admin
+      password: 12345678
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+server:
+  port: 8083
+jwt:
+  expiration: 2592000
+  expiration-refresh: 5184000
+  secretKey: ZGFpaG9jY29uZ25naGllcHRoYW5ocGhvaG9jaGltaW5o
+api:
+  prefix: /api/v1
+
+
